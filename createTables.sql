@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS  developer_infos(
 	preferredOS OS NOT NULL
 );
 
-DROP TABLE developer_infos ; 
+DROP TABLE developers; 
 
 CREATE TABLE IF NOT EXISTS  developer_infos(
 	id SERIAL PRIMARY KEY,
