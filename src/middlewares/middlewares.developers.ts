@@ -29,3 +29,29 @@ export const ensureEmailExists = async( req: Request, resp: Response, next: Next
     }
     return next()
 }
+
+export const ensureIdExists = async( req: Request, resp: Response, next: NextFunction) : Promise<Response | void> => {
+    const id: number = Number(req.params.id)
+
+    const queryString: string = `
+        SELECT
+            *
+        FROM 
+            developers
+        WHERE
+            id = $1
+    `
+    const queryConfig: QueryConfig = {
+        text: queryString,
+        values: [id]
+    }
+
+    const queryResult: developerResult = await client.query(queryConfig)
+    
+    if (!queryResult.rowCount) {
+        return resp.status(404).json({
+            message: 'Developer not found.'
+        })
+    }
+    return next()
+}
