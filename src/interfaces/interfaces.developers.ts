@@ -6,9 +6,20 @@ export interface iDeveloper  {
     developerInfoId?: number
 }
 
+export interface iDeveloperEdit  {
+    name?: string,
+    email?: string,
+    developerInfoId?: number
+}
+
 export interface iDeveloperInfos {
     developerSince: string | null,
     preferredOS: string | null
+}
+
+export interface iDeveloperInfosEdit {
+    developerSince?: string | null,
+    preferredOS?: string | null
 }
 
 export interface devInfos extends iDeveloperInfos {

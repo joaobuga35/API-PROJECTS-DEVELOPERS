@@ -66,3 +66,23 @@ export const ensureIdExists = async( req: Request, resp: Response, next: NextFun
     }
     return next()
 }
+
+export const verifyDevInfoId = async( req: Request, resp: Response, next: NextFunction) : Promise<Response | void> => {
+    const responseObjectDev = req.responseWithId.objectResponse
+
+    if (responseObjectDev.developerInfoId !== null) {
+        const queryString: string = `
+            DELETE FROM developer_infos WHERE id = $1;
+        `
+        const queryConfig: QueryConfig = {
+            text: queryString,
+            values: [responseObjectDev.developerInfoId]
+        }
+
+        await client.query(queryConfig)
+
+        return resp.status(204).json()
+    }
+    return next()
+}
+

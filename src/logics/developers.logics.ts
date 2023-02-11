@@ -2,7 +2,7 @@ import { Request,Response } from "express";
 import { QueryConfig } from "pg";
 import format from "pg-format";
 import { client } from "../database/config";
-import {developerInfoResult, developerResponse, developerResult, devInfos, iDeveloper, iDeveloperInfos} from '../interfaces/interfaces.developers'
+import {developerInfoResult, developerResponse, developerResult, devInfos, iDeveloper, iDeveloperEdit, iDeveloperInfos} from '../interfaces/interfaces.developers'
 
 export const createDeveloper = async (req: Request, resp: Response): Promise<Response> => {
     try {
@@ -20,7 +20,7 @@ export const createDeveloper = async (req: Request, resp: Response): Promise<Res
             })
         }
 
-        let newDeveloperData = {
+        let newDeveloperData:iDeveloper = {
             name: developerData.name,
             email: developerData.email
         }
@@ -47,7 +47,7 @@ export const createDeveloper = async (req: Request, resp: Response): Promise<Res
 
 export const readAllDevelopers = async (req: Request, resp: Response): Promise<Response> => {
 
-    const queryString = `
+    const queryString: string = `
         SELECT
         de.id as "developerID",
         de."name" as "name",
@@ -69,59 +69,70 @@ export const readDeveloperWithId = async (req: Request, resp: Response): Promise
     return resp.status(200).json(responseObjectDev)
 }
 
-export const createDeveloperExtraInformation = async (req: Request, resp: Response): Promise<Response> => {
+export const updateDeveloper = async (req: Request, resp: Response): Promise<Response> => {
     try {
-        const idDev:number = Number(req.params.id)
-        const devInfosBody: iDeveloperInfos = req.body
+        const id : number = Number(req.params.id)
 
-        if (!req.body.developerSince || !req.body.preferredOS) {
-            return resp.status(400).json({message: 'Missing required keys: developerSince,preferredOS.'})
+        let newDeveloperData:iDeveloperEdit = {
+            name: req.body.name,
+            email: req.body.email
         }
 
-        if (req.body.preferredOS !== 'Windows' && req.body.preferredOS !== 'Linux' && req.body.preferredOS !== 'MacOs') {
+        if (!req.body.name && !req.body.email) {
             return resp.status(400).json({
-                message: 'Your preferredOS not accepted, only Windows,Linux or MacOs'
+                message:'At least one of those keys must be send',
+                'keys': '[name,email]'
             })
         }
 
-        const newDevInfosBody:iDeveloperInfos = {
-            developerSince: devInfosBody.developerSince,
-            preferredOS: devInfosBody.preferredOS
+        if (req.body.name && !req.body.email) {
+            newDeveloperData = {
+                name: req.body.name
+            }
         }
 
-        let queryString: string = format(
-            `
-                INSERT INTO 
-                    developer_infos (%I)
-                VALUES 
-                    (%L)
-                RETURNING*;
-            `,
-            Object.keys(newDevInfosBody),Object.values(newDevInfosBody)
-        )
+        if (!req.body.name && req.body.email) {
+            newDeveloperData = {
+                email: req.body.email
+            }
+        }
 
-        let queryResult: developerInfoResult = await client.query(queryString)
-        
-        queryString = `
+        const queryString: string =format(`
             UPDATE
                 developers
-            SET
-                "developerInfoId" = $1
+            SET(%I) = ROW(%L)
             WHERE
-                id = $2
+                $1
             RETURNING *;
-        `
+        `, Object.keys(newDeveloperData),Object.values(newDeveloperData)) 
+
         const queryConfig: QueryConfig = {
             text: queryString,
-            values:[queryResult.rows[0].id,idDev]
+            values: [id]
         }
 
-        await client.query(queryConfig)
-
-        return resp.status(201).json(queryResult.rows[0])
+        const queryResult: developerResult = await client.query(queryConfig)
+        return resp.status(200).json(queryResult.rows[0])
     } catch (error: any) {
         return resp.status(500).json({
-            message:"Internal server error."
+            message: 'Internal server error'
         })
     }
+}
+
+export const deleteDevloper = async (req: Request, resp: Response): Promise<Response> => {
+    const id: Number = Number(req.params.id)
+    const responseObjectDev = req.responseWithId.objectResponse
+
+    const queryString: string = `
+        DELETE FROM developers WHERE id = $1;
+    `
+    const queryConfig: QueryConfig = {
+        text: queryString,
+        values: [id]
+    }
+
+    await client.query(queryConfig)
+
+    return resp.status(204).json()
 }
