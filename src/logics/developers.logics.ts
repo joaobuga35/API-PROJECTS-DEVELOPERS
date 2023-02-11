@@ -7,6 +7,19 @@ import {developerInfoResult, developerResponse, developerResult, devInfos, iDeve
 export const createDeveloper = async (req: Request, resp: Response): Promise<Response> => {
     try {
         const developerData: iDeveloper = req.body
+
+        if (!req.body.name) {
+            return resp.status(400).json({
+                message: 'Missing required keys: name'
+            })
+        }
+
+        if (!req.body.email) {
+            return resp.status(400).json({
+                message: 'Missing required keys: email'
+            })
+        }
+
         let newDeveloperData = {
             name: developerData.name,
             email: developerData.email
@@ -26,8 +39,8 @@ export const createDeveloper = async (req: Request, resp: Response): Promise<Res
         return resp.status(201).json(queryResult.rows[0])
         
     } catch (error: any) {
-        return resp.status(400).json({
-            message: 'Missing required keys: name and email'
+        return resp.status(500).json({
+            message: 'Internal server error'
         })
     }
 }
@@ -52,35 +65,24 @@ export const readAllDevelopers = async (req: Request, resp: Response): Promise<R
 }
 
 export const readDeveloperWithId = async (req: Request, resp: Response): Promise<Response> => {
-    const id:number = Number(req.params.id)
-
-    const queryString = `
-        SELECT
-            de.id as "developerID",
-            de."name" as "name",
-            de."email" as "email",
-            de."developerInfoId" as "developerInfoId",
-            dein."developerSince" as "developerInfoDeveloperSince",
-            dein. "preferredOS" as "developerInfoPreferredOS"
-        FROM
-            developers de
-        FULL JOIN
-            developer_infos dein ON de."developerInfoId" = dein.id
-        WHERE 
-            de.id = $1
-    `
-    const queryConfig: QueryConfig = {
-        text: queryString,
-        values: [id]
-    }
-    const queryResult: developerResult = await client.query(queryConfig)
-    return resp.status(200).json(queryResult.rows[0])
+    const responseObjectDev = req.responseWithId.objectResponse
+    return resp.status(200).json(responseObjectDev)
 }
 
 export const createDeveloperExtraInformation = async (req: Request, resp: Response): Promise<Response> => {
     try {
         const idDev:number = Number(req.params.id)
         const devInfosBody: iDeveloperInfos = req.body
+
+        if (!req.body.developerSince || !req.body.preferredOS) {
+            return resp.status(400).json({message: 'Missing required keys: developerSince,preferredOS.'})
+        }
+
+        if (req.body.preferredOS !== 'Windows' && req.body.preferredOS !== 'Linux' && req.body.preferredOS !== 'MacOs') {
+            return resp.status(400).json({
+                message: 'Your preferredOS not accepted, only Windows,Linux or MacOs'
+            })
+        }
 
         const newDevInfosBody:iDeveloperInfos = {
             developerSince: devInfosBody.developerSince,
@@ -118,8 +120,8 @@ export const createDeveloperExtraInformation = async (req: Request, resp: Respon
 
         return resp.status(201).json(queryResult.rows[0])
     } catch (error: any) {
-        return resp.status(400).json({
-            message:"Missing required keys: developerSince,preferredOS."
+        return resp.status(500).json({
+            message:"Internal server error."
         })
     }
 }
