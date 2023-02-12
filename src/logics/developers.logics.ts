@@ -3,6 +3,7 @@ import { QueryConfig } from "pg";
 import format from "pg-format";
 import { client } from "../database/config";
 import {developerInfoResult, developerResponse, developerResult, devInfos, iDeveloper, iDeveloperEdit, iDeveloperInfos} from '../interfaces/interfaces.developers'
+import {iProjDev, iProjDevResult} from '../interfaces/interface.projAndDev'
 
 export const createDeveloper = async (req: Request, resp: Response): Promise<Response> => {
     try {

@@ -8,7 +8,7 @@ export interface iProjects {
     repository: string,
     startDate: Date,
     endDate?: Date | undefined,
-    developerId: number
+    developerId?: number | undefined
 }
 
 export interface iProjectResponse extends iProjects {
