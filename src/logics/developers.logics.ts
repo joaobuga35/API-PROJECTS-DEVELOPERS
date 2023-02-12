@@ -122,7 +122,6 @@ export const updateDeveloper = async (req: Request, resp: Response): Promise<Res
 
 export const deleteDevloper = async (req: Request, resp: Response): Promise<Response> => {
     const id: Number = Number(req.params.id)
-    const responseObjectDev = req.responseWithId.objectResponse
 
     const queryString: string = `
         DELETE FROM developers WHERE id = $1;

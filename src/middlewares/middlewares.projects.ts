@@ -12,7 +12,7 @@ export const ensureDevExists = async( req: Request, resp: Response, next: NextFu
         FROM 
             developers
         WHERE
-            id = $1
+            id = $1;
     `
     const queryConfig: QueryConfig = {
         text: queryString,
@@ -45,13 +45,12 @@ export const ensureIdProjectExists = async( req: Request, resp: Response, next: 
             t.id as "technologyID",
             t."name" as "technologyName"
         FROM
-            projects_technologies pt  
-        RIGHT JOIN
-            projects p  ON pt."projectId" = p.id
+            projects p  
+        LEFT JOIN
+             projects_technologies pt ON pt."projectId" = p.id
         LEFT  JOIN 
-            technologies t ON pt."technologyId" = t.id
-        WHERE 
-            p.id = $1
+        	technologies t ON pt."technologyId" = t.id
+        WHERE p.id = $1;
     `
     const queryConfig: QueryConfig = {
         text: queryString,
@@ -66,7 +65,7 @@ export const ensureIdProjectExists = async( req: Request, resp: Response, next: 
     
     if (!queryResult.rowCount) {
         return resp.status(404).json({
-            message: 'Projoect not found.'
+            message: 'Project not found.'
         })
     }
     return next()

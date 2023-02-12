@@ -13,7 +13,7 @@ export const ensureEmailExists = async( req: Request, resp: Response, next: Next
         FROM 
             developers
         WHERE
-            email = $1
+            email = $1;
     `
     const queryConfig: QueryConfig = {
         text: queryString,
@@ -46,7 +46,7 @@ export const ensureIdExists = async( req: Request, resp: Response, next: NextFun
         FULL JOIN
             developer_infos dein ON de."developerInfoId" = dein.id
         WHERE 
-            de.id = $1
+            de.id = $1;
     `
     const queryConfig: QueryConfig = {
         text: queryString,

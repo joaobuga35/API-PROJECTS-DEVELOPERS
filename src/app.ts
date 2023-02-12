@@ -4,7 +4,7 @@ import {createDeveloper, deleteDevloper, readAllDevelopers, readDeveloperWithId,
 import {ensureEmailExists, ensureIdExists, verifyDevInfoId} from './middlewares/middlewares.developers'
 import {ensureDevExists, ensureIdProjectExists} from './middlewares/middlewares.projects'
 import {createDeveloperExtraInformation, updateDeveloperInfo} from './logics/developersInfo.logics'
-import {createProject, readAllProjects, readOneProjectWithId} from './logics/projects.logics'
+import {createProject, deleteProject, editProject, readAllProjects, readOneProjectWithId} from './logics/projects.logics'
 
 const app: Application = express()
 app.use(express.json())
@@ -21,8 +21,8 @@ app.delete('/developers/:id',ensureIdExists,verifyDevInfoId,deleteDevloper)
 app.post('/projects',ensureDevExists,createProject)
 app.get('/projects',readAllProjects)
 app.get('/projects/:id',ensureIdProjectExists,readOneProjectWithId)
-app.patch('/projects/:id')
-app.delete('/projects/:id')
+app.patch('/projects/:id',ensureIdProjectExists,editProject)
+app.delete('/projects/:id',ensureIdProjectExists,deleteProject)
 
 app.listen('3000', async () => {
     console.log('Server is running')

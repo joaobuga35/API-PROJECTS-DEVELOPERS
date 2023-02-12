@@ -59,11 +59,11 @@ export const readAllProjects = async (req: Request, resp: Response): Promise<Res
             t.id as "technologyID",
             t."name" as "technologyName"
         FROM
-            projects_technologies pt  
-        RIGHT JOIN
-            projects p  ON pt."projectId" = p.id
+            projects p  
+        LEFT JOIN
+             projects_technologies pt ON pt."projectId" = p.id
         LEFT  JOIN 
-            technologies t ON pt."technologyId" = t.id;
+        	technologies t ON pt."technologyId" = t.id;
     `
 
     const queryResult: readResult = await client.query(queryString)
@@ -73,4 +73,46 @@ export const readAllProjects = async (req: Request, resp: Response): Promise<Res
 export const readOneProjectWithId = async (req: Request, resp: Response): Promise<Response> => {
     const objectReturn = req.responseProjects.objectReadProject
     return resp.status(200).json(objectReturn)
+}
+
+export const editProject = async (req: Request, resp: Response): Promise<Response> => {
+    try {
+        const id: number = Number(req.params.id)
+        const projectBody: iProjects = req.body
+        const queryString: string =format(
+            `
+                UPDATE
+                    projects
+                SET(%I) = ROW(%L)
+                WHERE id = $1
+                RETURNING*;
+             `,Object.keys(projectBody),Object.values(projectBody)
+        ) 
+
+        const queryConfig: QueryConfig = {
+            text: queryString,
+            values:[id]
+        }
+        const queryResult: projectResult = await client.query(queryConfig)
+        return resp.status(200).json(queryResult.rows[0])
+    } catch (error: any) {
+        return resp.status(500).json({
+            message: 'Internal server error'
+        })
+    }
+}
+
+export const deleteProject = async (req: Request, resp: Response): Promise<Response> => {
+    const id:number = Number(req.params.id)
+    const queryString: string = `
+        DELETE FROM projects WHERE id = $1;
+    `
+    const queryConfig: QueryConfig = {
+        text: queryString,
+        values: [id]
+    }
+
+    await client.query(queryConfig)
+    
+    return resp.status(204).json()
 }
