@@ -2,7 +2,7 @@ import { request, Request,response,Response } from "express";
 import { QueryConfig } from "pg";
 import format from "pg-format";
 import { client } from "../database/config";
-import { iProjects, projectKeys, projectResult, readResult } from "../interfaces/interface.projects";
+import {  iProjectResponse, iProjects, projectKeys, projectResult, readResult } from "../interfaces/interface.projects";
 
 export const createProject = async (req: Request, resp: Response): Promise<Response> => {
     try {
@@ -79,6 +79,37 @@ export const editProject = async (req: Request, resp: Response): Promise<Respons
     try {
         const id: number = Number(req.params.id)
         const projectBody: iProjects = req.body
+
+        const newProjectBody: iProjects = {
+            name: projectBody.name,
+            description: projectBody.description,
+            estimatedTime: projectBody.estimatedTime,
+            repository: projectBody.repository,
+            startDate: projectBody.startDate,
+            endDate: projectBody.endDate,
+            developerId: projectBody.developerId
+        }
+
+        for(var key in newProjectBody) {
+            if (newProjectBody[key as keyof iProjects] === null || newProjectBody[key as keyof iProjects] === undefined) {
+                delete newProjectBody[key as keyof iProjects]
+            }
+        }
+
+        if (Object.keys(newProjectBody).length === 0) {
+            return resp.status(400).json({
+                'message': 'At least one of those keys must be send.',
+                'keys': [
+                    'name',
+                    'description',
+                    'estimatedTime',
+                    'repository',
+                    'startDate',
+                    'endDate',
+                    'developerId'
+                ]
+            })
+        }
         const queryString: string =format(
             `
                 UPDATE
@@ -86,7 +117,7 @@ export const editProject = async (req: Request, resp: Response): Promise<Respons
                 SET(%I) = ROW(%L)
                 WHERE id = $1
                 RETURNING*;
-             `,Object.keys(projectBody),Object.values(projectBody)
+             `,Object.keys(newProjectBody),Object.values(newProjectBody)
         ) 
 
         const queryConfig: QueryConfig = {
@@ -113,6 +144,5 @@ export const deleteProject = async (req: Request, resp: Response): Promise<Respo
     }
 
     await client.query(queryConfig)
-    
     return resp.status(204).json()
 }
