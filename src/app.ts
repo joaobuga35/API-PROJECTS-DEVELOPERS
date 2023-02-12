@@ -1,6 +1,6 @@
 import express, { Application, json } from 'express'
 import { startDatabase } from "./database/connection";
-import {createDeveloper, deleteDevloper, readAllDevelopers, readDeveloperWithId, updateDeveloper} from './logics/developers.logics'
+import {createDeveloper, deleteDevloper, readAllDevelopers, readDeveloperProjects, readDeveloperWithId, updateDeveloper} from './logics/developers.logics'
 import {ensureEmailExists, ensureIdExists, verifyDevInfoId} from './middlewares/middlewares.developers'
 import {ensureDevExists, ensureIdProjectExists} from './middlewares/middlewares.projects'
 import {createDeveloperExtraInformation, updateDeveloperInfo} from './logics/developersInfo.logics'
@@ -13,16 +13,17 @@ app.post('/developers', ensureEmailExists,createDeveloper)
 app.get('/developers', readAllDevelopers)
 app.get('/developers/:id',ensureIdExists, readDeveloperWithId)
 app.post('/developers/:id/infos',ensureIdExists, createDeveloperExtraInformation)
-
 app.patch('/developers/:id', ensureIdExists,ensureEmailExists,updateDeveloper)
 app.patch('/developers/:id/infos',ensureIdExists,updateDeveloperInfo)
 app.delete('/developers/:id',ensureIdExists,verifyDevInfoId,deleteDevloper)
+app.get('/developers/:id/projects',ensureIdExists, readDeveloperProjects)
 
 app.post('/projects',ensureDevExists,createProject)
 app.get('/projects',readAllProjects)
 app.get('/projects/:id',ensureIdProjectExists,readOneProjectWithId)
 app.patch('/projects/:id',ensureIdProjectExists,editProject)
 app.delete('/projects/:id',ensureIdProjectExists,deleteProject)
+app.post('/projects/:id/technologies')
 
 app.listen('3000', async () => {
     console.log('Server is running')

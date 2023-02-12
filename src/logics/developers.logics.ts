@@ -3,6 +3,7 @@ import { QueryConfig } from "pg";
 import format from "pg-format";
 import { client } from "../database/config";
 import {developerInfoResult, developerResponse, developerResult, devInfos, iDeveloper, iDeveloperEdit, iDeveloperInfos} from '../interfaces/interfaces.developers'
+import {iProjDev, iProjDevResult} from '../interfaces/interface.projAndDev'
 
 export const createDeveloper = async (req: Request, resp: Response): Promise<Response> => {
     try {
@@ -67,6 +68,45 @@ export const readAllDevelopers = async (req: Request, resp: Response): Promise<R
 export const readDeveloperWithId = async (req: Request, resp: Response): Promise<Response> => {
     const responseObjectDev = req.responseWithId.objectResponse
     return resp.status(200).json(responseObjectDev)
+}
+
+export const readDeveloperProjects = async (req: Request, resp: Response): Promise<Response> => {
+    const id: number = Number(req.params.id)
+    const queryString: string = `
+        SELECT
+            de.id as "developerID",
+            de."name" as "name",
+            de."email" as "email",
+            de."developerInfoId" as "developerInfoId",
+            dein."developerSince" as "developerInfoDeveloperSince",
+            dein. "preferredOS" as "developerInfoPreferredOS",
+            p.id as "projectID",
+            p."name" as "projectName",
+            p."description" as "projectDescription",
+            p."estimatedTime" as "projectEstimatedTime",
+            p."repository" as "projectRepository",
+            p."startDate" as "projectStartDate",
+            p."endDate" as "projectEndDate",
+            t.id as "technologyID",
+            t."name" as "technologyName"
+        FROM
+            developers de 
+        LEFT JOIN
+            developer_infos dein ON dein.id = de."developerInfoId"
+        LEFT  JOIN 
+            projects p  ON p."developerId" = de.id
+        LEFT JOIN 
+            projects_technologies pt ON pt."projectId" = p.id 
+        LEFT JOIN 
+            technologies t ON pt."technologyId" = t.id
+        WHERE de.id = $1;
+    `
+    const queryConfig: QueryConfig = {
+        text: queryString,
+        values: [id]
+    }
+    const queryResult: iProjDevResult = await client.query(queryConfig)
+    return resp.status(200).json(queryResult.rows)
 }
 
 export const updateDeveloper = async (req: Request, resp: Response): Promise<Response> => {
