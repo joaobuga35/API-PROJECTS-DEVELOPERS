@@ -2,7 +2,9 @@ import express, { Application, json } from 'express'
 import { startDatabase } from "./database/connection";
 import {createDeveloper, deleteDevloper, readAllDevelopers, readDeveloperWithId, updateDeveloper} from './logics/developers.logics'
 import {ensureEmailExists, ensureIdExists, verifyDevInfoId} from './middlewares/middlewares.developers'
+import {ensureDevExists, ensureIdProjectExists} from './middlewares/middlewares.projects'
 import {createDeveloperExtraInformation, updateDeveloperInfo} from './logics/developersInfo.logics'
+import {createProject, readAllProjects, readOneProjectWithId} from './logics/projects.logics'
 
 const app: Application = express()
 app.use(express.json())
@@ -14,8 +16,13 @@ app.post('/developers/:id/infos',ensureIdExists, createDeveloperExtraInformation
 
 app.patch('/developers/:id', ensureIdExists,ensureEmailExists,updateDeveloper)
 app.patch('/developers/:id/infos',ensureIdExists,updateDeveloperInfo)
-
 app.delete('/developers/:id',ensureIdExists,verifyDevInfoId,deleteDevloper)
+
+app.post('/projects',ensureDevExists,createProject)
+app.get('/projects',readAllProjects)
+app.get('/projects/:id',ensureIdProjectExists,readOneProjectWithId)
+app.patch('/projects/:id')
+app.delete('/projects/:id')
 
 app.listen('3000', async () => {
     console.log('Server is running')
