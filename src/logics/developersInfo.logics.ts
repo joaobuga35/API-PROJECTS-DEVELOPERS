@@ -107,8 +107,9 @@ export const updateDeveloperInfo = async (req: Request, resp: Response): Promise
         return resp.status(200).json(queryResult.rows[0])
         
     } catch (error: any) {
-        return resp.status(500).json({
-            message: 'Internal server error'
+        return resp.status(400).json({
+            'message': 'Invalid OS option.',
+            'options': ['Windows','Linux','MacOS']
         })
     }
 }

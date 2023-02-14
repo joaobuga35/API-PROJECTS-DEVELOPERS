@@ -60,7 +60,7 @@ export const ensureIdProjectExists = async( req: Request, resp: Response, next: 
     const queryResult: readResult = await client.query(queryConfig)
 
     req.responseProjects = {
-        objectReadProject: queryResult.rows[0]
+        objectReadProject: queryResult.rows
     }
     
     if (!queryResult.rowCount) {
