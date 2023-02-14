@@ -10,7 +10,7 @@ declare global {
                 objectResponse: developerResponse
             },
             responseProjects: {
-                objectReadProject: iReadProjects
+                objectReadProject: Array<iReadProjects>
             },
             localStorageId: {
                 techId: idTech
