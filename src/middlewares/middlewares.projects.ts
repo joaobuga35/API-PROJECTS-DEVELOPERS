@@ -1,38 +1,50 @@
 import { NextFunction, Request, Response } from "express";
 import { QueryConfig } from "pg";
-import {client} from '../database/config'
-import {iProjects, projectResult, readResult} from '../interfaces/interface.projects'
+import { client } from "../database/config";
+import {
+  iProjects,
+  projectResult,
+  readResult,
+} from "../interfaces/interface.projects";
 
-export const ensureDevExists = async( req: Request, resp: Response, next: NextFunction) : Promise<Response | void> => {
-    const body: iProjects = req.body
+export const ensureDevExists = async (
+  req: Request,
+  resp: Response,
+  next: NextFunction
+): Promise<Response | void> => {
+  const body: iProjects = req.body;
 
-    const queryString: string = `
+  const queryString: string = `
         SELECT
             *
         FROM 
             developers
         WHERE
             id = $1;
-    `
-    const queryConfig: QueryConfig = {
-        text: queryString,
-        values: [body.developerId]
-    }
+    `;
+  const queryConfig: QueryConfig = {
+    text: queryString,
+    values: [body.developerId],
+  };
 
-    const queryResult: projectResult = await client.query(queryConfig)
+  const queryResult: projectResult = await client.query(queryConfig);
 
-    if (!queryResult.rows[0]) {
-        return resp.status(400).json({
-            message: 'Developer not found.'
-        })
-    }
-    return next()
-}
+  if (!queryResult.rows[0]) {
+    return resp.status(400).json({
+      message: "Developer not found.",
+    });
+  }
+  return next();
+};
 
-export const ensureIdProjectExists = async( req: Request, resp: Response, next: NextFunction) : Promise<Response | void> => {
-    const id: number = Number(req.params.id)
+export const ensureIdProjectExists = async (
+  req: Request,
+  resp: Response,
+  next: NextFunction
+): Promise<Response | void> => {
+  const id: number = Number(req.params.id);
 
-    const queryString: string = `
+  const queryString: string = `
         SELECT
             p.id as "projectID",
             p."name" as "projectName",
@@ -51,22 +63,22 @@ export const ensureIdProjectExists = async( req: Request, resp: Response, next: 
         LEFT  JOIN 
         	technologies t ON pt."technologyId" = t.id
         WHERE p.id = $1;
-    `
-    const queryConfig: QueryConfig = {
-        text: queryString,
-        values: [id]
-    }
+    `;
+  const queryConfig: QueryConfig = {
+    text: queryString,
+    values: [id],
+  };
 
-    const queryResult: readResult = await client.query(queryConfig)
+  const queryResult: readResult = await client.query(queryConfig);
 
-    req.responseProjects = {
-        objectReadProject: queryResult.rows
-    }
-    
-    if (!queryResult.rowCount) {
-        return resp.status(404).json({
-            message: 'Project not found.'
-        })
-    }
-    return next()
-}
+  req.responseProjects = {
+    objectReadProject: queryResult.rows,
+  };
+
+  if (!queryResult.rowCount) {
+    return resp.status(404).json({
+      message: "Project not found.",
+    });
+  }
+  return next();
+};
